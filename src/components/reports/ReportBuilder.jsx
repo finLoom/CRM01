@@ -20,6 +20,12 @@ const sectionStyles = mergeStyles({
   marginBottom: '20px'
 });
 
+// Default date range to prevent undefined errors
+const getDefaultDateRange = () => ({
+  startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)),
+  endDate: new Date()
+});
+
 /**
  * ReportBuilder component handles the UI for configuring report parameters
  * 
@@ -30,47 +36,67 @@ const ReportBuilder = ({
   isLoading, 
   initialConfig = {} 
 }) => {
+  // Make sure initialConfig.dateRange is properly structured
+  const safeInitialConfig = {
+    ...initialConfig,
+    dateRange: initialConfig.dateRange || getDefaultDateRange()
+  };
+
   // Report configuration state
   const [reportConfig, setReportConfig] = useState({
     reportType: 'sales',
-    dateRange: { 
-      startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)), 
-      endDate: new Date() 
-    },
+    dateRange: getDefaultDateRange(),
     groupBy: 'month',
     showChart: true,
     chartType: 'line',
-    ...initialConfig
+    ...safeInitialConfig
   });
+
+  // Validate reportConfig has all required fields
+  useEffect(() => {
+    // Ensure dateRange exists and has valid dates
+    if (!reportConfig.dateRange) {
+      setReportConfig(prevConfig => ({
+        ...prevConfig,
+        dateRange: getDefaultDateRange()
+      }));
+    }
+  }, [reportConfig]);
 
   // Handle change in report configuration
   const handleConfigChange = (field, value) => {
-    setReportConfig({
-      ...reportConfig,
+    setReportConfig(prevConfig => ({
+      ...prevConfig,
       [field]: value
-    });
+    }));
   };
 
   // Handle date range changes
   const handleDateRangeChange = (field, date) => {
-    setReportConfig({
-      ...reportConfig,
+    setReportConfig(prevConfig => ({
+      ...prevConfig,
       dateRange: {
-        ...reportConfig.dateRange,
+        ...(prevConfig.dateRange || getDefaultDateRange()),
         [field]: date
       }
-    });
+    }));
   };
 
   // Generate the report with current configuration
   const handleGenerateReport = () => {
-    onGenerateReport(reportConfig);
+    // Create a safe copy with guaranteed dateRange
+    const safeConfig = {
+      ...reportConfig,
+      dateRange: reportConfig.dateRange || getDefaultDateRange()
+    };
+    onGenerateReport(safeConfig);
   };
 
   // Predefined date range options
   const applyDateRange = (range) => {
     const today = new Date();
     let startDate;
+    let endDate = today;
     
     switch(range) {
       case 'thisMonth':
@@ -94,20 +120,16 @@ const ReportBuilder = ({
         break;
       case 'lastYear':
         startDate = new Date(today.getFullYear() - 1, 0, 1);
-        const endDate = new Date(today.getFullYear() - 1, 11, 31);
-        setReportConfig({
-          ...reportConfig,
-          dateRange: { startDate, endDate }
-        });
-        return;
+        endDate = new Date(today.getFullYear() - 1, 11, 31);
+        break;
       default:
         return;
     }
     
-    setReportConfig({
-      ...reportConfig,
-      dateRange: { startDate, endDate: today }
-    });
+    setReportConfig(prevConfig => ({
+      ...prevConfig,
+      dateRange: { startDate, endDate }
+    }));
   };
 
   const dateRangeOptions = [
@@ -120,6 +142,11 @@ const ReportBuilder = ({
     { key: 'custom', text: 'Custom Range' }
   ];
 
+  // Safely access dateRange properties
+  const dateRange = reportConfig.dateRange || getDefaultDateRange();
+  const startDate = dateRange.startDate || new Date(new Date().setMonth(new Date().getMonth() - 1));
+  const endDate = dateRange.endDate || new Date();
+
   return (
     <div className={sectionStyles}>
       <Text variant="large" styles={{ root: { marginBottom: 16 } }}>Report Configuration</Text>
@@ -129,7 +156,7 @@ const ReportBuilder = ({
           <Stack.Item grow={1}>
             <Dropdown
               label="Report Type"
-              selectedKey={reportConfig.reportType}
+              selectedKey={reportConfig.reportType || 'sales'}
               options={reportTypes}
               onChange={(_, option) => handleConfigChange('reportType', option.key)}
             />
@@ -137,7 +164,7 @@ const ReportBuilder = ({
           <Stack.Item grow={1}>
             <Dropdown
               label="Group By"
-              selectedKey={reportConfig.groupBy}
+              selectedKey={reportConfig.groupBy || 'month'}
               options={groupByOptions}
               onChange={(_, option) => handleConfigChange('groupBy', option.key)}
             />
@@ -155,14 +182,14 @@ const ReportBuilder = ({
           <Stack.Item grow={1}>
             <DatePicker
               label="Start Date"
-              value={reportConfig.dateRange.startDate}
+              value={startDate}
               onSelectDate={(date) => handleDateRangeChange('startDate', date)}
             />
           </Stack.Item>
           <Stack.Item grow={1}>
             <DatePicker
               label="End Date"
-              value={reportConfig.dateRange.endDate}
+              value={endDate}
               onSelectDate={(date) => handleDateRangeChange('endDate', date)}
             />
           </Stack.Item>
@@ -172,14 +199,14 @@ const ReportBuilder = ({
           <Stack.Item grow={1}>
             <Toggle
               label="Show Chart"
-              checked={reportConfig.showChart}
+              checked={reportConfig.showChart !== undefined ? reportConfig.showChart : true}
               onChange={(_, checked) => handleConfigChange('showChart', checked)}
             />
           </Stack.Item>
           <Stack.Item grow={1}>
             <Dropdown
               label="Chart Type"
-              selectedKey={reportConfig.chartType}
+              selectedKey={reportConfig.chartType || 'line'}
               options={chartTypes}
               onChange={(_, option) => handleConfigChange('chartType', option.key)}
               disabled={!reportConfig.showChart}

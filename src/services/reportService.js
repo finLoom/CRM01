@@ -50,25 +50,62 @@ const salesData = [
     { period: 'Jun 2023', new: 80, active: 520, bySource: 'Web (32%), Referral (45%)' }
   ];
   
+  
   // Column definitions for different report types
   export const getColumnsForReportType = (type) => {
     switch(type) {
-      case 'sales':
-        return [
-          { key: 'period', name: 'Period', fieldName: 'period', minWidth: 100, maxWidth: 200, isResizable: true },
-          { key: 'revenue', name: 'Revenue', fieldName: 'revenue', minWidth: 100, maxWidth: 100, isResizable: true, onRender: (item) => `$${item.revenue.toLocaleString()}` },
-          { key: 'deals', name: 'Deals Closed', fieldName: 'deals', minWidth: 100, maxWidth: 100, isResizable: true },
-          { key: 'avgDealSize', name: 'Avg. Deal Size', fieldName: 'avgDealSize', minWidth: 100, maxWidth: 100, isResizable: true, onRender: (item) => `$${item.avgDealSize.toLocaleString()}` },
-          { key: 'conversionRate', name: 'Conversion Rate', fieldName: 'conversionRate', minWidth: 100, maxWidth: 100, isResizable: true, onRender: (item) => `${item.conversionRate}%` }
-        ];
-      case 'leads':
-        return [
-          { key: 'period', name: 'Period', fieldName: 'period', minWidth: 100, maxWidth: 200, isResizable: true },
-          { key: 'new', name: 'New Leads', fieldName: 'new', minWidth: 100, maxWidth: 100, isResizable: true },
-          { key: 'qualified', name: 'Qualified Leads', fieldName: 'qualified', minWidth: 100, maxWidth: 100, isResizable: true },
-          { key: 'converted', name: 'Converted', fieldName: 'converted', minWidth: 100, maxWidth: 100, isResizable: true },
-          { key: 'conversionRate', name: 'Conversion Rate', fieldName: 'conversionRate', minWidth: 100, maxWidth: 100, isResizable: true, onRender: (item) => `${item.conversionRate}%` }
-        ];
+        case 'sales':
+            return [
+              { field: 'date', headerName: 'Date', width: 120 },
+              { field: 'customer', headerName: 'Customer', width: 200 },
+              { field: 'product', headerName: 'Product', width: 200 },
+              { field: 'quantity', headerName: 'Quantity', width: 120, type: 'number' },
+              { field: 'amount', headerName: 'Amount', width: 150, type: 'number' },
+              { field: 'status', headerName: 'Status', width: 120 }
+            ];
+          case 'customers':
+            return [
+              { field: 'name', headerName: 'Name', width: 200 },
+              { field: 'email', headerName: 'Email', width: 250 },
+              { field: 'phone', headerName: 'Phone', width: 150 },
+              { field: 'totalPurchases', headerName: 'Total Purchases', width: 150, type: 'number' },
+              { field: 'lastPurchase', headerName: 'Last Purchase', width: 120 },
+              { field: 'status', headerName: 'Status', width: 120 }
+            ];
+          case 'inventory':
+            return [
+              { field: 'product', headerName: 'Product', width: 200 },
+              { field: 'sku', headerName: 'SKU', width: 120 },
+              { field: 'category', headerName: 'Category', width: 150 },
+              { field: 'quantity', headerName: 'Quantity', width: 120, type: 'number' },
+              { field: 'price', headerName: 'Price', width: 120, type: 'number' },
+              { field: 'status', headerName: 'Status', width: 120 }
+            ];
+          case 'leads':
+            return [
+              { field: 'name', headerName: 'Name', width: 200 },
+              { field: 'email', headerName: 'Email', width: 250 },
+              { field: 'phone', headerName: 'Phone', width: 150 },
+              { field: 'source', headerName: 'Source', width: 150 },
+              { field: 'status', headerName: 'Status', width: 120 },
+              { field: 'createdAt', headerName: 'Created At', width: 120 }
+            ];
+    //   case 'sales':
+    //     return [
+    //       { key: 'period', name: 'Period', fieldName: 'period', minWidth: 100, maxWidth: 200, isResizable: true },
+    //       { key: 'revenue', name: 'Revenue', fieldName: 'revenue', minWidth: 100, maxWidth: 100, isResizable: true, onRender: (item) => `$${item.revenue.toLocaleString()}` },
+    //       { key: 'deals', name: 'Deals Closed', fieldName: 'deals', minWidth: 100, maxWidth: 100, isResizable: true },
+    //       { key: 'avgDealSize', name: 'Avg. Deal Size', fieldName: 'avgDealSize', minWidth: 100, maxWidth: 100, isResizable: true, onRender: (item) => `$${item.avgDealSize.toLocaleString()}` },
+    //       { key: 'conversionRate', name: 'Conversion Rate', fieldName: 'conversionRate', minWidth: 100, maxWidth: 100, isResizable: true, onRender: (item) => `${item.conversionRate}%` }
+    //     ];
+    //   case 'leads':
+    //     return [
+    //       { key: 'period', name: 'Period', fieldName: 'period', minWidth: 100, maxWidth: 200, isResizable: true },
+    //       { key: 'new', name: 'New Leads', fieldName: 'new', minWidth: 100, maxWidth: 100, isResizable: true },
+    //       { key: 'qualified', name: 'Qualified Leads', fieldName: 'qualified', minWidth: 100, maxWidth: 100, isResizable: true },
+    //       { key: 'converted', name: 'Converted', fieldName: 'converted', minWidth: 100, maxWidth: 100, isResizable: true },
+    //       { key: 'conversionRate', name: 'Conversion Rate', fieldName: 'conversionRate', minWidth: 100, maxWidth: 100, isResizable: true, onRender: (item) => `${item.conversionRate}%` }
+    //     ];
       case 'opportunities':
         return [
           { key: 'period', name: 'Period', fieldName: 'period', minWidth: 100, maxWidth: 200, isResizable: true },

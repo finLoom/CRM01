@@ -1,10 +1,4 @@
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
-import { Line, Bar, Pie } from 'react-chartjs-2';
-import { mergeStyles, Text } from '@fluentui/react';
-import reportService from '../../services/reportService';
-
-// Include chart.js dependencies
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,13 +6,15 @@ import {
   PointElement,
   LineElement,
   BarElement,
-  ArcElement,
   Title,
   Tooltip,
   Legend,
+  ArcElement
 } from 'chart.js';
+import { Line, Bar, Pie } from 'react-chartjs-2';
+import { mergeStyles } from '@fluentui/react';
 
-// Register the required Chart.js components
+// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -32,41 +28,111 @@ ChartJS.register(
 );
 
 const chartContainerStyles = mergeStyles({
-  height: '350px',
-  position: 'relative'
-});
-
-const sectionStyles = mergeStyles({
-  backgroundColor: 'white',
-  boxShadow: '0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108)',
-  borderRadius: '2px',
-  padding: '20px',
-  marginBottom: '20px'
+  height: '400px',
+  padding: '20px'
 });
 
 /**
- * ReportChart component to visualize report data
- * 
- * @component
+ * Helper function to get Y-axis title based on report type
  */
-const ReportChart = ({ reportType, chartType, reportData }) => {
-  // Get chart data based on report type
-  const data = useMemo(() => {
-    if (chartType === 'pie') {
-      return reportService.getPieChartData(reportType, reportData);
-    } else {
-      return reportService.getChartData(reportType, reportData);
-    }
-  }, [reportType, chartType, reportData]);
+const getYAxisTitle = (reportType) => {
+  switch (reportType) {
+    case 'sales':
+      return 'Revenue ($)';
+    case 'customers':
+      return 'Customer Count';
+    case 'inventory':
+      return 'Product Count';
+    default:
+      return 'Value';
+  }
+};
 
-  // Configure chart options
+/**
+ * ReportChart component renders different chart types based on report data
+ */
+const ReportChart = ({ 
+  data = [], 
+  chartType = 'bar', 
+  reportType = 'sales', 
+  groupBy = 'month' 
+}) => {
+  // Prepare chart data
+  const chartData = useMemo(() => {
+    if (!data || data.length === 0) {
+      return {
+        labels: [],
+        datasets: [{
+          label: 'No Data',
+          data: [],
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderColor: 'rgba(75, 192, 192, 1)',
+        }]
+      };
+    }
+
+    // Extract labels from data based on groupBy
+    const labels = data.map(item => item.label || item[groupBy] || 'Unknown');
+    
+    // Get colors for chart
+    const backgroundColor = [
+      'rgba(75, 192, 192, 0.2)',
+      'rgba(54, 162, 235, 0.2)',
+      'rgba(255, 206, 86, 0.2)',
+      'rgba(153, 102, 255, 0.2)',
+      'rgba(255, 159, 64, 0.2)',
+      'rgba(255, 99, 132, 0.2)'
+    ];
+    
+    const borderColor = [
+      'rgba(75, 192, 192, 1)',
+      'rgba(54, 162, 235, 1)',
+      'rgba(255, 206, 86, 1)',
+      'rgba(153, 102, 255, 1)',
+      'rgba(255, 159, 64, 1)',
+      'rgba(255, 99, 132, 1)'
+    ];
+
+    // Format data based on chart type
+    if (chartType === 'pie') {
+      return {
+        labels,
+        datasets: [{
+          data: data.map(item => item.value || 0),
+          backgroundColor,
+          borderColor,
+          borderWidth: 1
+        }]
+      };
+    }
+
+    return {
+      labels,
+      datasets: [{
+        label: reportType.charAt(0).toUpperCase() + reportType.slice(1),
+        data: data.map(item => item.value || 0),
+        backgroundColor: backgroundColor[0],
+        borderColor: borderColor[0],
+        borderWidth: 1
+      }]
+    };
+  }, [data, chartType, reportType, groupBy]);
+
+  // Chart options
   const options = useMemo(() => {
+    // Safely get groupBy with default
+    const safeGroupBy = groupBy || 'month';
+    
     const baseOptions = {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: {
           position: 'top',
+        },
+        title: {
+          display: true,
+          text: `${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report`,
         },
         tooltip: {
           callbacks: {
@@ -75,35 +141,20 @@ const ReportChart = ({ reportType, chartType, reportData }) => {
               if (label) {
                 label += ': ';
               }
-              if (context.parsed.y !== undefined) {
-                // Add currency symbol for financial values
-                if (reportType === 'sales' || reportType === 'opportunities') {
-                  if (context.dataset.label.includes('Revenue') || 
-                      context.dataset.label.includes('Value') || 
-                      context.dataset.label.includes('Deal')) {
-                    label += '$' + context.parsed.y.toLocaleString();
-                  } else {
-                    label += context.parsed.y;
-                  }
-                } else {
-                  label += context.parsed.y;
-                }
-              } else if (context.parsed !== undefined) {
-                // For pie charts
-                if (reportType === 'sales' || reportType === 'opportunities') {
-                  label += '$' + context.parsed.toLocaleString();
-                } else {
-                  label += context.parsed;
-                }
+              if (context.parsed.y !== null) {
+                label += new Intl.NumberFormat('en-US', { 
+                  style: reportType === 'sales' ? 'currency' : 'decimal',
+                  currency: 'USD'
+                }).format(context.parsed.y);
               }
               return label;
             }
           }
         }
-      }
+      },
     };
 
-    // Additional options for line and bar charts
+    // Add specific options based on chart type
     if (chartType !== 'pie') {
       return {
         ...baseOptions,
@@ -118,80 +169,39 @@ const ReportChart = ({ reportType, chartType, reportData }) => {
           x: {
             title: {
               display: true,
-              text: 'Period'
+              text: safeGroupBy.charAt(0).toUpperCase() + safeGroupBy.slice(1)
             }
           }
         }
       };
     }
-    
+
     return baseOptions;
-  }, [reportType, chartType]);
+  }, [chartType, reportType, groupBy]);
 
-  // Get Y-axis title based on report type
-  const getYAxisTitle = (type) => {
-    switch(type) {
-      case 'sales':
-        return 'Revenue ($)';
-      case 'opportunities':
-        return 'Value ($)';
-      case 'leads':
-      case 'contacts':
-        return 'Count';
-      case 'activities':
-        return 'Activity Count';
-      default:
-        return 'Value';
-    }
-  };
-
-  // Title for the chart section
-  const getChartTitle = () => {
-    const reportTypeName = reportType.charAt(0).toUpperCase() + reportType.slice(1);
-    return `${reportTypeName} ${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart`;
-  };
-
-  // Render the appropriate chart type
+  // Render different chart types
   const renderChart = () => {
-    if (!data || !data.labels || data.labels.length === 0) {
-      return <Text>No data available for chart</Text>;
+    if (!data || data.length === 0) {
+      return <div>No data available for chart</div>;
     }
 
-    switch(chartType) {
+    switch (chartType) {
       case 'line':
-        return <Line data={data} options={options} />;
+        return <Line options={options} data={chartData} />;
       case 'bar':
-        return <Bar data={data} options={options} />;
+        return <Bar options={options} data={chartData} />;
       case 'pie':
-        return <Pie data={data} options={options} />;
+        return <Pie options={options} data={chartData} />;
       default:
-        return <Text>Unsupported chart type</Text>;
+        return <Bar options={options} data={chartData} />;
     }
   };
-
-  if (!reportData || reportData.length === 0) {
-    return null;
-  }
 
   return (
-    <div className={sectionStyles}>
-      <Text variant="large" styles={{ root: { marginBottom: 16 } }}>
-        {getChartTitle()}
-      </Text>
-      <div className={chartContainerStyles}>
-        {renderChart()}
-      </div>
+    <div className={chartContainerStyles}>
+      {renderChart()}
     </div>
   );
-};
-
-ReportChart.propTypes = {
-  /** Type of report being visualized */
-  reportType: PropTypes.oneOf(['sales', 'leads', 'opportunities', 'activities', 'contacts']).isRequired,
-  /** Type of chart to display */
-  chartType: PropTypes.oneOf(['line', 'bar', 'pie']).isRequired,
-  /** Data to be visualized */
-  reportData: PropTypes.array.isRequired
 };
 
 export default ReportChart;

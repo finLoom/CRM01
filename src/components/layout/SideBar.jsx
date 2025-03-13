@@ -104,7 +104,7 @@ const SideBar = ({ collapsed }) => {
           url: '/opportunities',
           key: 'opportunities',
           iconProps: {
-            iconName: 'ProcessingRun'  // Changed from BuildQueueLength to a registered icon
+            iconName: 'SplitObject'  // Changed from BuildQueueLength to a registered icon
           }
         },
         {
