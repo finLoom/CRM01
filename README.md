@@ -189,3 +189,106 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Microsoft Fluent UI](https://developer.microsoft.com/en-us/fluentui)
 - [React](https://reactjs.org/)
 - [Chart.js](https://www.chartjs.org/)
+
+
+
+# Reporting Module Documentation
+
+## Overview
+
+The reporting module provides advanced reporting capabilities for the CRM system, allowing users to visualize and analyze data across different areas of the business. The module is built with a modular architecture, making it easy to maintain and extend.
+
+## Features
+
+- **Multiple Report Types:** Sales, Leads, Opportunities, Activities, and Contacts reports
+- **Interactive Configuration:** Users can customize report parameters including date ranges, grouping, and filters
+- **Data Visualization:** Multiple chart types (line, bar, pie) for visual data representation
+- **Tabular Data View:** Detailed data tables with sortable columns
+- **Export Functionality:** Export reports to Excel and CSV formats
+- **Save & Load Reports:** Save report configurations for future use
+
+## Module Structure
+
+```
+src/
+├── components/
+│   ├── reports/
+│   │   ├── ReportBuilder.jsx       // Configuration UI for reports
+│   │   ├── ReportViewer.jsx        // Tabular data display component
+│   │   ├── ReportChart.jsx         // Chart visualization component
+│   │   ├── SavedReportsList.jsx    // Management of saved reports
+│   │   ├── ExportTools.jsx         // Export functionality
+│   │   └── report-types/           // Specific report implementations
+│   │       ├── SalesReport.jsx     // Sales report implementation
+│   │       └── [Other report types will be added here]
+├── services/
+│   └── reportService.js           // Data and utility functions for reports
+└── pages/
+    └── ReportsPage.jsx            // Main container page for reports
+```
+
+## Components
+
+### ReportBuilder
+- Provides the UI for configuring report parameters
+- Allows setting report type, date range, grouping, and chart options
+- Triggers report generation
+
+### ReportViewer
+- Displays tabular report data with appropriate columns
+- Handles loading states and empty data scenarios
+- Shows summary information about the displayed data
+
+### ReportChart
+- Renders various chart types based on report data
+- Configures chart options specific to each report type
+- Handles formatting for different data types (currency, percentages, etc.)
+
+### SavedReportsList
+- Manages saving and loading report configurations
+- Displays a list of previously saved reports
+- Provides options to load or delete saved reports
+
+### ExportTools
+- Provides UI for exporting reports in different formats
+- Handles Excel export with proper formatting
+- Supports CSV export as an alternative option
+
+### Report Type Components (SalesReport, etc.)
+- Implement specific report logic for each area
+- Display KPIs relevant to the report type
+- Integrate charts and data tables
+
+## Services
+
+### reportService.js
+- Provides data for reports (mock data in this implementation)
+- Defines column configurations for different report types
+- Prepares data for chart visualization
+- Handles saved report storage
+
+## Usage
+
+1. Navigate to the Reports page from the sidebar
+2. Click "Configure Report" to set up report parameters
+3. Select the desired report type, date range, and display options
+4. Click "Generate Report" to view the report
+5. Use the export tools to download the report in Excel or CSV format
+6. Save useful report configurations for future use
+
+## Extension Points
+
+The reporting module is designed to be easily extended:
+
+1. **Adding New Report Types:**
+   - Create a new component in `report-types/` folder
+   - Add new data and column definitions in `reportService.js`
+   - Update the ReportsPage to include the new report type
+
+2. **Adding New Chart Types:**
+   - Add new chart options in `reportService.js`
+   - Update the ReportChart component to render the new chart type
+
+3. **Adding New Export Formats:**
+   - Extend the ExportTools component with new export methods
+   - Add new format options to the export dialog

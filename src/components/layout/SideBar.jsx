@@ -1,5 +1,5 @@
 import React from 'react';
-import { Nav, INavLinkGroup, INavStyles } from '@fluentui/react/lib/Nav';
+import { Nav } from '@fluentui/react/lib/Nav';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { mergeStyles } from '@fluentui/react/lib/Styling';
 
@@ -104,7 +104,7 @@ const SideBar = ({ collapsed }) => {
           url: '/opportunities',
           key: 'opportunities',
           iconProps: {
-            iconName: 'Processing'
+            iconName: 'ProcessingRun'  // Changed from BuildQueueLength to a registered icon
           }
         },
         {
@@ -113,6 +113,14 @@ const SideBar = ({ collapsed }) => {
           key: 'tasks',
           iconProps: {
             iconName: 'CheckList'
+          }
+        },
+        {
+          name: 'Reports',  // New Reports item
+          url: '/reports',
+          key: 'reports',
+          iconProps: {
+            iconName: 'BarChart4'
           }
         },
         {
