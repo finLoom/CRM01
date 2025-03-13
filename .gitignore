@@ -39,6 +39,7 @@ Thumbs.db
 .env.test.local
 .env.production.local
 
+#comment
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
